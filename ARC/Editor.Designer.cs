@@ -56,6 +56,7 @@
             this.defaultIPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.defaultTIDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearDefaultsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainToolStrip.SuspendLayout();
             this.OptionsContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -112,6 +113,7 @@
             this.toolStripMenuItem1,
             this.saveToolStripMenuItem,
             this.saveToPS3ToolStripMenuItem,
+            this.closeToolStripMenuItem,
             this.toolStripSeparator1,
             this.openWorkingDirectoryToolStripMenuItem,
             this.darkToolStripMenuItem,
@@ -275,12 +277,21 @@
             this.defaultTIDToolStripMenuItem.Name = "defaultTIDToolStripMenuItem";
             this.defaultTIDToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.defaultTIDToolStripMenuItem.Text = "Default TID...";
+            this.defaultTIDToolStripMenuItem.Click += new System.EventHandler(this.defaultTIDToolStripMenuItem_Click);
             // 
             // clearDefaultsToolStripMenuItem
             // 
             this.clearDefaultsToolStripMenuItem.Name = "clearDefaultsToolStripMenuItem";
             this.clearDefaultsToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             this.clearDefaultsToolStripMenuItem.Text = "Clear Defaults...";
+            this.clearDefaultsToolStripMenuItem.Click += new System.EventHandler(this.clearDefaultsToolStripMenuItem_Click);
+            // 
+            // closeToolStripMenuItem
+            // 
+            this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.closeToolStripMenuItem.Text = "Close File";
+            this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
             // Editor
             // 
@@ -335,6 +346,7 @@
         private System.Windows.Forms.ToolStripMenuItem defaultIPToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem defaultTIDToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem clearDefaultsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
     }
 }
 

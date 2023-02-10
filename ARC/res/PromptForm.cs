@@ -13,6 +13,8 @@ namespace ARC.res
 {
     public partial class PromptForm : Form
     {
+        public bool Cancelled { get; private set; }
+
         private PromptForm()
         {
             InitializeComponent();
@@ -21,7 +23,7 @@ namespace ARC.res
         {
             var dlg = Initialize(title, text, button1, button2);
             var r = dlg.ShowDialog();
-            return new PromptResult(dlg.textBox1.Text, r);
+            return new PromptResult(dlg.textBox1.Text, r, dlg.Cancelled);
         }
 
         public static PromptResult Show(string text, string title, out PromptForm form, string button2 = "", string button1 = "")
@@ -29,7 +31,7 @@ namespace ARC.res
             var dlg = Initialize(title, text, button1, button2);
             form = dlg;
             var r = dlg.ShowDialog();
-            return new PromptResult(dlg.textBox1.Text, r);
+            return new PromptResult(dlg.textBox1.Text, r, dlg.Cancelled);
         }
         private static PromptForm Initialize(string title, string text, string button1, string button2)
         {
@@ -40,14 +42,19 @@ namespace ARC.res
             dlg.button2.Visible = button2 != "";
             dlg.button1.Visible = button1 != "";
             dlg.button1.Click += (s, ee) => dlg.Close();
-            dlg.button2.Click += (s, ee) => dlg.Close();
+            dlg.button2.Click += (s, ee) => { dlg.Close(); dlg.Cancelled = true; };
+            dlg.button1.Text = button1;
+            dlg.button2.Text = button2;
             return dlg;
         }
+
+
     }
     public class PromptResult
     {
         public string Value { get; private set; }
+        public bool Cancelled { get; private set; }
         public DialogResult Result { get; private set; }
-        public PromptResult(string value, DialogResult result) { Value = value; Result = result; }
+        public PromptResult(string value, DialogResult result, bool Cancelled) { Value = value; Result = result; this.Cancelled = Cancelled; }
     }
 }

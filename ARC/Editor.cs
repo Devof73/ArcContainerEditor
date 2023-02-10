@@ -30,8 +30,8 @@ namespace ARC
         string _idName = string.Empty;
         bool _fileOpened = false;
         List<Process> _working = null;
-        string _installTid = Properties.Settings.Default.defaultTid;
-        string _installIp = Properties.Settings.Default.defaultIp;
+        string _installTid { get => Properties.Settings.Default.defaultTid; }
+        string _installIp { get => Properties.Settings.Default.defaultIp; }
         public Editor(string filename)
         {
             InitializeComponent();
@@ -229,6 +229,7 @@ namespace ARC
         }
         private void Editor_FormClosing(object sender, FormClosingEventArgs e)
         {
+            Properties.Settings.Default.Save();
             e.Cancel = NotifySave(out DialogResult res);
             if (res == DialogResult.Yes)
             {
@@ -352,8 +353,24 @@ namespace ARC
             {
                 ptime = Stopwatch.StartNew();
                 var baseDir = "ftp://{0}/dev_hdd0/game";
-                var r = PromptForm.Show("Ps3 System IP", "Install ARC on PS3", "cancel", "ok");
-                var sucess = IPAddress.TryParse(r.Value, out IPAddress value);
+                var sucess = false;
+                IPAddress value;
+                if (_installIp == "")
+                {
+                    var r = PromptForm.Show("Ps3 System IP", "Install ARC on PS3", "cancel", "ok");
+                    sucess = IPAddress.TryParse(r.Value, out value);
+                    if (r.Cancelled)
+                    {
+                        ReportProgress(100);
+                        ReportState();
+                        return;
+                    }
+                }
+                else
+                {
+
+                    sucess = IPAddress.TryParse(_installIp, out value);
+                }
                 ReportProgress(20);
                 ReportState("Connecting..");
                 if (sucess == true)
@@ -368,14 +385,20 @@ namespace ARC
                         bool reach = TcpReachable(value.ToString(), 21);
                         if (!reach)
                         {
-
                             MessageBox.Show("Cannot reach external system.", "Operation cancelled.");
+                            ReportProgress(100);
+                            ReportState();
+
                         }
                         else
                         {
-                            string gameRegion = "";
-                            var promptResult = PromptForm.Show("Game Installation TitleId: ", "¿?", out PromptForm pform, "", "OK");
-                            cwinvk(() => gameRegion = promptResult.Value);
+                            string gameRegion = _installTid;
+                            PromptResult promptResult;
+                            if (_installTid == "")
+                            {
+                                promptResult = PromptForm.Show("Game Installation TitleId: ", "¿?", out PromptForm pform, "", "OK");
+                                cwinvk(() => gameRegion = promptResult.Value);
+                            }
                             if (gameRegion.Length > 9)
                             {
                                 MessageBox.Show("Error the title code cannot be longer than 9 characters.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -552,6 +575,7 @@ namespace ARC
                 _filename = "";
                 _workingDirectory = "";
                 _shouldSave = false;
+                _fileOpened = false;
                 MessageBox.Show("Extracted resource files for visualization have been removed. So you can no longer continue editing the current module. Reopen a file.", "Filedata changed.", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             toolStripMenuItem1.Enabled = saveToolStripMenuItem.Enabled = NameTextBox.Enabled = saveToPS3ToolStripMenuItem.Enabled = File.Exists(_filename);
@@ -563,7 +587,61 @@ namespace ARC
 
         private void defaultIPToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            var r = PromptForm.Show("PS3 SYSTEM IP", "Set default installation ip.", "CANCEL", "OK");
+            if (r.Cancelled) return;
+            var result = IPAddress.TryParse(r.Value, out IPAddress address);
+            if (!result) { MessageBox.Show("Invalid IP value. ", "Error", MessageBoxButtons.OK); return; }
+            Properties.Settings.Default.defaultIp = address.ToString();
 
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            treeView1.Nodes.Clear();
+            _filename = "";
+            _workingDirectory = "";
+            _shouldSave = false;
+            _fileOpened = false;
+        }
+
+        private void defaultTIDToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string gameRegion;
+            var promptResult = PromptForm.Show("Game Installation TitleId: ", "¿?", out PromptForm pform, "", "OK");
+            gameRegion = promptResult.Value;
+            if (promptResult.Cancelled) return;
+            if (gameRegion.Length > 9)
+            {
+                MessageBox.Show("The title code cannot be longer than 9 characters.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                var tidChars = gameRegion.ToCharArray();
+                int result = -1;
+                string resultMessage = "unknown exception.";
+                int chInd = 0;
+                foreach (char c in tidChars)
+                {
+                    bool flag2 = ((chInd > 4) & char.IsLower(c)) || ((chInd > 4) & !char.IsNumber(c)) || ((chInd > 4) & char.IsSymbol(c));
+                    bool flag1 = char.IsPunctuation(c) || char.IsLower(c) || char.IsSeparator(c) || char.IsSymbol(c);
+                    if (flag1) resultMessage = "Invalid tid first part.";
+                    if (flag2) resultMessage = "Invalid tid second part.";
+                    if (flag2 & flag1) resultMessage = "TID is invalid";
+                    result = bt(!(flag1 && flag2));
+                    chInd++;
+                }
+                if (result == -1)
+                {
+                    MessageBox.Show(string.Format("Error catched with message: {0}", resultMessage), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else Properties.Settings.Default.defaultTid = gameRegion;
+            }
+        }
+
+        private void clearDefaultsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.defaultIp = "";
+            Properties.Settings.Default.defaultIp = "";
         }
     }
 }
